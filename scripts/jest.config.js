@@ -1,5 +1,5 @@
 module.exports = {
-  "coverageDirectory": "/tmp/archly-coverage",
+  "coverageDirectory": "../out/coverage",
   "coverageReporters": ["json", "html"],
   "rootDir": "../src",
 };

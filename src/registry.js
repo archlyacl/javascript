@@ -1,3 +1,5 @@
+const { getValue } = require('./common');
+
 const DUPLICATE_ENTRIES = "Entry '_entry_' is already in the registry.";
 const ENTRY_NOT_FOUND = "Entry '_entry_' is not in registry.";
 
@@ -38,10 +40,12 @@ Registry.display = function (path) {
  * registry or if the parent is not in the registry.
  */
 Registry.prototype.add = function (entry, parent) {
+  entry = getValue(entry);
   if (this.has(entry)) {
     throw new Error(DUPLICATE_ENTRIES.replace(/_entry_/g, entry));
   }
   if (parent) {
+    parent = getValue(parent);
     if (!this.has(parent)) {
       throw new Error(ENTRY_NOT_FOUND.replace(/_entry_/g, parent));
     }
@@ -131,6 +135,7 @@ Registry.prototype.importRegistry = function (map) {
 Registry.prototype.traverseRoot = function (entry) {
   var eId, path = [];
 
+  entry = getValue(entry);
   if (entry == null) {
     path.push('*');
 
@@ -196,6 +201,7 @@ Registry.prototype.remove = function (entry, removeDescendants) {
       reg = this.registry,
       removed = [];
 
+  entry = getValue(entry);
   if (!this.has(entry)) {
     throw new Error(ENTRY_NOT_FOUND.replace(/_entry_/g, entry));
   }

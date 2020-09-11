@@ -1,3 +1,5 @@
+const { getValue } = require("./common");
+
 const PERM_NOT_FOUND = "Permission '_perm_' not found on '_role_' for '_res_'.";
 
 const Types = {
@@ -67,7 +69,10 @@ Permission.prototype.toString = function () {
  * @memberof Permission
  */
 Permission.prototype.allow = function (role, resource, action) {
-  var perm, key = this.makeKey(role, resource);
+  var roleValue = getValue(role),
+      resValue = getValue(resource),
+      perm,
+      key = this.makeKey(roleValue, resValue);
 
   if (!action) {
     action = Types.ALL;
@@ -99,7 +104,10 @@ Permission.prototype.clear = function () {
  * @memberof Permission
  */
 Permission.prototype.deny = function (role, resource, action) {
-  var perm, key = this.makeKey(role, resource);
+  var roleValue = getValue(role),
+      resValue = getValue(resource),
+      perm,
+      key = this.makeKey(roleValue, resValue);
 
   if (!action) {
     action = Types.ALL;
@@ -357,9 +365,11 @@ Permission.prototype.makeDefaultDeny = function () {
  */
 Permission.prototype.remove = function (role, resource, action) {
   var orig, perm, type,
-      key = this.makeKey(role, resource),
-      resId = resource ? resource : '*',
-      roleId = role ? role : '*';
+      resValue = getValue(resource),
+      roleValue = getValue(role),
+      key = this.makeKey(roleValue, resValue),
+      resId = resValue ? resValue : '*',
+      roleId = roleValue ? roleValue : '*';
 
   if (!action) {
     action = Types.ALL;

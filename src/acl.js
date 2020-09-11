@@ -4,8 +4,10 @@ const NON_EMPTY = "_reg_ registry is not empty";
 
 /**
  * The Acl class for managing permissions.
- * @name Acl
  * @constructor
+ * @param {Permission} perms
+ * @param {Registry} resourceReg
+ * @param {Registry} roleReg
  */
 function Acl(perms, resourceReg, roleReg) {
   this.permissions = perms;
@@ -14,54 +16,53 @@ function Acl(perms, resourceReg, roleReg) {
 }
 
 /**
- * Adds a resource.
- * @memberof Acl
+ * Adds a resource to the registry.
+ * @param {string|Object} resource
+ * @param {string|Object} parent - The parent resource to add the resource under.
  */
 Acl.prototype.addResource = function (resource, parent) {
-  this.resources.add(getValue(resource), getValue(parent));
+  this.resources.add(resource, parent);
 }
 
+/**
+ * Adds a role to the registry.
+ * @param {string|Object} role
+ * @param {string|Object} parent - The parent role to add the role under. Optional.
+ */
 Acl.prototype.addRole = function (role, parent) {
-  this.roles.add(getValue(role), getValue(parent));
+  this.roles.add(role, parent);
 };
 
 Acl.prototype.allowAllResource = function (role) {
-  var roleValue = getValue(role);
-
   try {
-    this.roles.add(roleValue);
+    this.roles.add(role);
   } catch (e) { //duplicate entry
     //do nothing
   }
-  this.permissions.allow(roleValue, '*');
+  this.permissions.allow(role, '*');
 };
 
 Acl.prototype.allowAllRole = function (resource) {
-  var resValue = getValue(resource);
-
   try {
-    this.resources.add(resValue);
+    this.resources.add(resource);
   } catch (e) { //duplicate entry
     //do nothing
   }
-  this.permissions.allow('*', resValue);
+  this.permissions.allow('*', resource);
 }
 
 Acl.prototype.allow = function (role, resource, action) {
-  var resValue = getValue(resource),
-      roleValue = getValue(role);
-
   try {
-    this.roles.add(roleValue);
+    this.roles.add(role);
   } catch (e) {
     //do nothing
   }
   try {
-    this.resources.add(resValue);
+    this.resources.add(resource);
   } catch (e) {
     //do nothing
   }
-  this.permissions.allow(roleValue, resValue, action);
+  this.permissions.allow(role, resource, action);
 };
 
 Acl.prototype.clear = function () {
@@ -71,42 +72,35 @@ Acl.prototype.clear = function () {
 };
 
 Acl.prototype.denyAllResource = function (role) {
-  var roleValue = getValue(role);
-
   try {
-    this.roles.add(roleValue);
+    this.roles.add(role);
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(roleValue, '*');
+  this.permissions.deny(role, '*');
 };
 
 Acl.prototype.denyAllRole = function (resource) {
-  var resValue = getValue(resource);
-
   try {
-    this.resources.add(resValue);
+    this.resources.add(resource);
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny('*', resValue);
+  this.permissions.deny('*', resource);
 };
 
 Acl.prototype.deny = function (role, resource, action) {
-  var resValue = getValue(resource),
-      roleValue = getValue(role);
-
   try {
-    this.roles.add(roleValue);
+    this.roles.add(role);
   } catch (e) {
     //do nothing
   }
   try {
-    this.resources.add(resValue);
+    this.resources.add(resource);
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(roleValue, resValue, action);
+  this.permissions.deny(role, resource, action);
 };
 
 Acl.prototype.exportPermissions = function () {
@@ -144,10 +138,8 @@ Acl.prototype.importRoles = function (roles) {
 
 Acl.prototype.isAllowed = function (role, resource, action) {
   var aco, aro, c, grant, r,
-      resValue = getValue(resource),
-      roleValue = getValue(role),
-      resPath = this.resources.traverseRoot(resValue),
-      rolePath = this.roles.traverseRoot(roleValue);
+      resPath = this.resources.traverseRoot(resource),
+      rolePath = this.roles.traverseRoot(role);
 
   if (!action) {
     action = Types.ALL;
@@ -179,10 +171,8 @@ Acl.prototype.isAllowed = function (role, resource, action) {
 
 Acl.prototype.isDenied = function (role, resource, action) {
   var aco, aro, c, grant, r,
-      resValue = getValue(resource),
-      roleValue = getValue(role),
-      resPath = this.resources.traverseRoot(resValue),
-      rolePath = this.roles.traverseRoot(roleValue);
+      resPath = this.resources.traverseRoot(resource),
+      rolePath = this.roles.traverseRoot(role);
 
   if (!action) {
     action = Types.ALL;
@@ -221,30 +211,28 @@ Acl.prototype.makeDefaultDeny = function () {
 };
 
 Acl.prototype.remove = function (role, resource, action) {
-  this.permissions.remove(getValue(role), getValue(resource), action);
+  this.permissions.remove(role, resource, action);
 };
 
 Acl.prototype.removeResource = function (resource, removeDescendants) {
-  var i, resources,
-      resId = getValue(resource);
+  var i, resources;
 
-  if (resId === null) {
+  if (resource === null) {
     throw new Error('Cannot remove null resource');
   }
-  resources = this.resources.remove(resId, removeDescendants);
+  resources = this.resources.remove(resource, removeDescendants);
   for (i = 0; i < resources.length; i++) {
     this.permissions.removeByResource(resources[i]);
   }
 };
 
 Acl.prototype.removeRole = function (role, removeDescendants) {
-  var i, roles,
-      roleId = getValue(role);
+  var i, roles;
 
-  if (roleId === null) {
+  if (role === null) {
     throw new Error('Cannot remove null role');
   }
-  roles = this.roles.remove(roleId, removeDescendants);
+  roles = this.roles.remove(role, removeDescendants);
   for (i = 0; i < roles.length; i++) {
     this.permissions.removeByRole(roles[i]);
   }
@@ -274,16 +262,5 @@ Acl.prototype.visualizeResources = function (loader) {
 Acl.prototype.visualizeRoles = function (loader) {
   return this.roles.display(loader, null, null);
 };
-
-function getValue(val) {
-  if (!val) {
-    return null;
-  }
-  if (typeof val.getId === 'function' &&
-  typeof val.getId() === 'string') {
-    return val.getId();
-  }
-  return val;
-}
 
 module.exports = Acl;

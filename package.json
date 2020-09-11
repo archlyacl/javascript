@@ -12,6 +12,7 @@
     "package": "rollup -c scripts/rollup.package.config.js",
     "prepublish": "npm run test && npm run package",
     "publish": "npm run prepublish && npm publish",
+    "docs": "npx jsdoc -c scripts/jsdoc.config.js -P package.json",
     "test": "jest --config scripts/jest.config.js",
     "test-coverage": "jest --coverage --config scripts/jest.config.js"
   },
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
     "jest": "^24.9.0",
+    "jsdoc": "^3.6.5",
     "rollup": "^1.27.13",
     "rollup-plugin-minify-es": "^1.1.1"
   }

@@ -1,3 +1,4 @@
+const error = require('./error');
 const { Types } = require('./permission');
 const archly = require('./archly');
 
@@ -42,11 +43,17 @@ test('Default', function () {
       rol1 = 'r1',
       res1 = 'r1';
 
-  expect(A.isAllowed()).toBe(false);
+  expect(() => {
+    A.isAllowed()
+  }).toThrow(error.NullError); // Parameters are undefined.
   A.makeDefaultAllow();
-  expect(A.isAllowed()).toBe(true);
+  expect(() => {
+    A.isAllowed()
+  }).toThrow(error.NullError); // Parameters are undefined.
   A.makeDefaultDeny();
-  expect(A.isAllowed()).toBe(false);
+  // expect(A.isAllowed()).toBe(true);
+  // A.makeDefaultDeny();
+  // expect(A.isAllowed()).toBe(false);
 
   A.resources.add(res1);
   A.roles.add(rol1);
@@ -516,14 +523,12 @@ test('Test Remove NULL', function () {
   expect(acl.isAllowed(rolna, resna)).toBe(false); // Default deny
   expect(acl.isDenied(rolna, resna)).toBe(true); // Default deny
 
-  acl.remove(nullrol, nullres);
-
-  expect(acl.isAllowed(rolna, resna)).toBe(false); // False because the root is removed
-  expect(acl.isDenied(rolna, resna)).toBe(false);  // False because the root is removed
-
   expect(() => {
-    acl.remove(nullrol, nullres, Types.CREATE);
-  }).toThrow("Permission '*::*' not found on '*' for '*'.");
+    acl.remove(nullrol, nullres);
+  }).toThrow(error.NullError);
+
+  expect(acl.isAllowed(rolna, resna)).toBe(false); // False because no change.
+  expect(acl.isDenied(rolna, resna)).toBe(true);  // False because no change.
 });
 
 test('Test Remove Resource/Role', function () {
