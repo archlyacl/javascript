@@ -1,16 +1,16 @@
+const error = require('./error');
+
 const Registry = require('./registry');
 
-var Role = function (id) {
+var Role = function (id, description) {
   this.id = id;
+  this.description = description;
 };
 Role.prototype.getEntryDescription = function () {
-  return this.id;
+  return this.description;
 };
 Role.prototype.getId = function () {
   return this.id;
-};
-Role.prototype.retrieveEntry = function (id) {
-  return new Role(id);
 };
 
 test('Add/Remove Entry', () => {
@@ -22,26 +22,43 @@ test('Add/Remove Entry', () => {
 
   // Registry starts out empty.
   expect(reg.size()).toBe(0);
+  expect(Object.keys(reg.records).length).toBe(0);
+
+  // Empty parameter throw errors.
+  expect(() => {
+    reg.add();
+  }).toThrow(error.NullError);
 
   reg.add(r1);
   expect(reg.size()).toBe(1);
-
+  expect(Object.keys(reg.records).length).toBe(1);
+  
   // Cannot have duplicate entries in registry.
   expect(() => {
     reg.add(r1)
   }).toThrow("Entry 'RES-1' is already in the registry.");
-
+  
   reg.add(r2);
   expect(reg.size()).toBe(2);
-
+  expect(Object.keys(reg.records).length).toBe(2);
+  
+  expect(() => {
+    reg.remove();
+  }).toThrow(error.NullError);
+  
   expect(() => {
     reg.remove(r, false)
   }).toThrow("Entry 'RES' is not in registry.");
-
+  
   removed = reg.remove(r1);
   expect(reg.size()).toBe(1);
+  expect(Object.keys(reg.records).length).toBe(1);
   expect(removed.length).toBe(1);
   expect(removed[0]).toBe(r1);
+  
+  reg.clear();
+  expect(reg.size()).toBe(0);
+  expect(Object.keys(reg.records).length).toBe(0);
 });
 
 test('Add/Remove parents', () => {
@@ -54,8 +71,7 @@ test('Add/Remove parents', () => {
       r2a1  = 'RES-2-A-1',
       r2a1i = 'RES-2-A-1-i',
       r1b1  = 'ReS-1-B-1',
-      removed,
-      thrown = false;
+      removed;
 
   expect(() => {
     reg.add(r1a, r1);
@@ -103,13 +119,58 @@ test('Add/Remove parents', () => {
   expect(reg.hasChild(r1)).toBeFalsy();
 });
 
-test('Role Registry functions', () => {
-  var reg = new Registry(),
-      r1 = 'Rr1';
+test('Role Registry miscellaneous functions', () => {
+  var exports,
+      expectedRec = {},
+      expectedReg = {},
+      reg = new Registry(),
+      impReg = new Registry(),
+      r1 = 'Rr1',
+      r2 = new Role('Rr2', 'Role 2');
 
+  exports = reg.exportRegistry();
   expect(reg.has(r1)).toBeFalsy();
+  expect(exports.records).toEqual({});
+  expect(exports.registry).toEqual({});
+  
   reg.add(r1);
+  exports = reg.exportRegistry();
+  expectedRec[r1.toString()] = r1;
+  expectedReg[r1] = '';
   expect(reg.has(r1)).toBeTruthy();
+  expect(exports.records).toEqual(expectedRec);
+  expect(exports.registry).toEqual(expectedReg);
+  
+  reg.add(r2);
+  exports = reg.exportRegistry();
+  expectedRec[r2.getId()] = r2;
+  expectedReg[r2.getId()] = '';
+  expect(reg.has(r2)).toBeTruthy();
+  expect(exports.records).toEqual(expectedRec);
+  expect(exports.registry).toEqual(expectedReg);
+
+  // Expect values to lose type information upon export.
+  expect(typeof exports.records[r1]).toBe('string');
+  expect(exports.records[r2.getId()] instanceof Role).toBeFalsy();
+  
+  impReg.importRegistry(exports);
+  expect(impReg.size()).toBe(2);
+  expect(Object.keys(impReg.records).length).toBe(2);
+  // Type information should still be absent.
+  expect(typeof impReg.records[r1]).toBe('string');
+  expect(typeof impReg.records[r2.getId()]).toBe('object');
+  expect(impReg.records[r2.getId()] instanceof Role).toBeFalsy();
+  
+  // Import with class constructor.
+  impReg.importRegistry(exports, Role);
+  // Size should be the same.
+  expect(impReg.size()).toBe(2);
+  expect(Object.keys(impReg.records).length).toBe(2);
+  // Type information should be added now.
+  expect(typeof impReg.records[r1]).toBe('object');
+  expect(impReg.records[r1] instanceof Role).toBeTruthy();
+  expect(typeof impReg.records[r2.getId()]).toBe('object');
+  expect(impReg.records[r2.getId()] instanceof Role).toBeTruthy();
 });
 
 test("Traversal", () => {

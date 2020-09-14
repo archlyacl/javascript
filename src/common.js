@@ -1,7 +1,7 @@
 /**
  * @module common
  */
-const error = require('./error');
+const error = require("./error");
 
 /**
  * Gets the ID of the object.
@@ -16,8 +16,7 @@ function getValue(val) {
   if (!val) {
     throw new error.NullError();
   }
-  if (typeof val.getId === 'function' &&
-  typeof val.getId() === 'string') {
+  if (typeof val.getId === "function" && typeof val.getId() === "string") {
     return val.getId();
   }
   return val.toString();

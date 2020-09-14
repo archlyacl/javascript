@@ -1,6 +1,6 @@
 const { Types } = require('./permission');
 
-const NON_EMPTY = "_reg_ registry is not empty";
+const NON_EMPTY = '_reg_ registry is not empty';
 
 /**
  * The Acl class for managing permissions.
@@ -22,7 +22,7 @@ function Acl(perms, resourceReg, roleReg) {
  */
 Acl.prototype.addResource = function (resource, parent) {
   this.resources.add(resource, parent);
-}
+};
 
 /**
  * Adds a role to the registry.
@@ -36,7 +36,8 @@ Acl.prototype.addRole = function (role, parent) {
 Acl.prototype.allowAllResource = function (role) {
   try {
     this.roles.add(role);
-  } catch (e) { //duplicate entry
+  } catch (e) {
+    //duplicate entry
     //do nothing
   }
   this.permissions.allow(role, '*');
@@ -45,11 +46,12 @@ Acl.prototype.allowAllResource = function (role) {
 Acl.prototype.allowAllRole = function (resource) {
   try {
     this.resources.add(resource);
-  } catch (e) { //duplicate entry
+  } catch (e) {
+    //duplicate entry
     //do nothing
   }
   this.permissions.allow('*', resource);
-}
+};
 
 Acl.prototype.allow = function (role, resource, action) {
   try {
@@ -108,11 +110,11 @@ Acl.prototype.exportPermissions = function () {
 };
 
 Acl.prototype.exportResources = function () {
-  return this.resources.export();
+  return this.resources.exportRegistry();
 };
 
 Acl.prototype.exportRoles = function () {
-  return this.roles.export();
+  return this.roles.exportRegistry();
 };
 
 Acl.prototype.importPermissions = function (permissions) {
@@ -137,9 +139,13 @@ Acl.prototype.importRoles = function (roles) {
 };
 
 Acl.prototype.isAllowed = function (role, resource, action) {
-  var aco, aro, c, grant, r,
-      resPath = this.resources.traverseRoot(resource),
-      rolePath = this.roles.traverseRoot(role);
+  var aco,
+    aro,
+    c,
+    grant,
+    r,
+    resPath = this.resources.traverseRoot(resource),
+    rolePath = this.roles.traverseRoot(role);
 
   if (!action) {
     action = Types.ALL;
@@ -170,9 +176,13 @@ Acl.prototype.isAllowed = function (role, resource, action) {
 };
 
 Acl.prototype.isDenied = function (role, resource, action) {
-  var aco, aro, c, grant, r,
-      resPath = this.resources.traverseRoot(resource),
-      rolePath = this.roles.traverseRoot(role);
+  var aco,
+    aro,
+    c,
+    grant,
+    r,
+    resPath = this.resources.traverseRoot(resource),
+    rolePath = this.roles.traverseRoot(role);
 
   if (!action) {
     action = Types.ALL;
@@ -255,12 +265,12 @@ Acl.prototype.visualizePermissions = function () {
   return this.permissions.toString();
 };
 
-Acl.prototype.visualizeResources = function (loader) {
-  return this.resources.display(loader, null, null);
+Acl.prototype.visualizeResources = function () {
+  return this.resources.display(null, null);
 };
 
-Acl.prototype.visualizeRoles = function (loader) {
-  return this.roles.display(loader, null, null);
+Acl.prototype.visualizeRoles = function () {
+  return this.roles.display(null, null);
 };
 
 module.exports = Acl;
