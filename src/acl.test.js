@@ -700,7 +700,7 @@ test('Test Export/Import', function () {
   A.importResources(newRes);
   A.importRoles(newRoles);
   A.importPermissions(newPerms);
-  expect(A.visualize()).toBeTruthy();
+  expect(A.toString()).toBeTruthy();
   expect(A.visualizePermissions()).toBeTruthy();
   expect(A.visualizeResources()).toBeTruthy();
   expect(A.visualizeRoles()).toBeTruthy();

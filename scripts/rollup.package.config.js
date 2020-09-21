@@ -1,7 +1,7 @@
 import commonjs from '@rollup/plugin-commonjs';
 import minify from 'rollup-plugin-minify-es';
 
-const version = '0.8.1';
+const version = '1.0.0-rc1';
 
 export default {
   input: './src/archly.js',
@@ -21,7 +21,7 @@ export default {
       name: 'Archly',
       format: 'iife',
       exports: 'named',
-    }
+    },
   ],
   plugins: [
     commonjs(),
@@ -30,6 +30,5 @@ export default {
         preamble: '/* Archly v' + version + ' */',
       },
     }),
-  ]
-}
-
+  ],
+};

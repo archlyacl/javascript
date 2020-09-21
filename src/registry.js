@@ -71,7 +71,7 @@ Registry.prototype.clear = function () {
  *
  * @return {object} A clone of the registry and records.
  */
-Registry.prototype.exportRegistry = function () {
+Registry.prototype.export = function () {
   var i,
     _records = {},
     _registry = {};
@@ -96,7 +96,7 @@ Registry.prototype.exportRegistry = function () {
 /**
  * Checks if the entry is stored in the registry.
  *
- * @param {AclEntry} entry - The entry to check.
+ * @param {string|Object} entry - The entry to check.
  * @return {boolean} True if the ID of the entry is present in
  * the registry.
  */
@@ -127,9 +127,9 @@ Registry.prototype.hasChild = function (parentId) {
  * The existing `registry` and `records` properties are instantiated to new objects right before the import.
  *
  * @param {object} stored - The object with the keys `registry` and `records`. If the keys are not present, this is essentially a clear operation for the missing property.
- * @param {function} instantiator - The constructor/function for instantiating the values in `records`. Optional.
+ * @param {function} [instantiator] - The class/function for instantiating the values in `records`. Optional.
  */
-Registry.prototype.importRegistry = function (stored, instantiator) {
+Registry.prototype.import = function (stored, instantiator) {
   var i,
     hasClass = typeof instantiator === 'function';
 
@@ -140,13 +140,15 @@ Registry.prototype.importRegistry = function (stored, instantiator) {
     }
   }
   this.records = {};
-  if (typeof stored.records === 'object') {
-    for (i in stored.records) {
+  for (i in stored.records) {
+    if (typeof stored.records[i] === 'object') {
       if (hasClass) {
         this.records[i] = new instantiator(stored.records[i]);
       } else {
         this.records[i] = stored.records[i];
       }
+    } else {
+      this.records[i] = stored.records[i];
     }
   }
 };
@@ -154,7 +156,7 @@ Registry.prototype.importRegistry = function (stored, instantiator) {
 /**
  * Creates a traversal path from the entry to the root.
  *
- * @param {AclEntry} entry - The ID of the entry to start
+ * @param {string|Object} entry - The ID of the entry to start
  * traversing from.
  * @return {array} A list of entry IDs starting from the entry and
  * ending with the root.
@@ -201,7 +203,7 @@ Registry.prototype.display = function (leading, entryId) {
     entryId = '';
   }
 
-  childIds = findChildren(this.registry, entryId);
+  childIds = _findChildren(this.registry, entryId);
   childIds.forEach(function (childId) {
     var entry = tis.records[childId];
     if (!entry) {
@@ -220,7 +222,7 @@ Registry.prototype.display = function (leading, entryId) {
 /**
  * Removes an entry from the registry.
  *
- * @param {AclEntry} entry - The entry to remove from the registry.
+ * @param {string|Object} entry - The entry to remove from the registry.
  * @param {boolean} removeDescendants - If true, all child
  * entries and descendants are removed as well.
  * @throws Will throw an error if the entry or any of the
@@ -240,10 +242,10 @@ Registry.prototype.remove = function (entry, removeDescendants) {
 
   if (this.hasChild(entry)) {
     parentId = this.registry[entry];
-    childIds = findChildren(this.registry, entry);
+    childIds = _findChildren(this.registry, entry);
 
     if (removeDescendants) {
-      removed = removed.concat(remDescendants(this, childIds));
+      removed = removed.concat(_remDescendants(this, childIds));
     } else {
       childIds.forEach(function (childId) {
         reg[childId] = parentId;
@@ -262,10 +264,19 @@ Registry.prototype.remove = function (entry, removeDescendants) {
   return removed;
 };
 
+/**
+ * Gets the number of entries in the registry.
+ *
+ * @return {number}
+ */
 Registry.prototype.size = function () {
   return Object.keys(this.registry).length;
 };
 
+/**
+ * Creates an indented representation of the ACl hierarchy.
+ * @return {string}
+ */
 Registry.prototype.toString = function () {
   var value,
     key,
@@ -301,7 +312,7 @@ Registry.prototype.toString = function () {
   return output.join('');
 };
 
-function remDescendants(reg, entryIds) {
+function _remDescendants(reg, entryIds) {
   var removed = [];
 
   entryIds.forEach(function (entryId) {
@@ -310,7 +321,7 @@ function remDescendants(reg, entryIds) {
     removed.push(entryId);
     while (reg.hasChild(entryId)) {
       removed = removed.concat(
-        remDescendants(reg, findChildren(reg.registry, entryId))
+        _remDescendants(reg, _findChildren(reg.registry, entryId))
       );
     }
   });
@@ -318,7 +329,7 @@ function remDescendants(reg, entryIds) {
   return removed;
 }
 
-function findChildren(registry, parentId) {
+function _findChildren(registry, parentId) {
   var key,
     children = [];
 
