@@ -141,6 +141,10 @@ test('Role Registry miscellaneous functions', () => {
   expect(exports.records).toEqual(expectedRec);
   expect(exports.registry).toEqual(expectedReg);
 
+  // Code coverage for getRecord
+  expect(reg.getRecord(r1)).toBe(r1);
+  expect(reg.getRecord(r2.id)).toBeUndefined();
+
   reg.add(r2);
   exports = reg.export();
   expectedRec[r2.getId()] = r2;
@@ -148,6 +152,10 @@ test('Role Registry miscellaneous functions', () => {
   expect(reg.has(r2)).toBeTruthy();
   expect(exports.records).toEqual(expectedRec);
   expect(exports.registry).toEqual(expectedReg);
+
+  // Code coverage for getRecord
+  expect(reg.getRecord(r1)).toBe(r1);
+  expect(reg.getRecord(r2.id) instanceof Role).toBeTruthy();
 
   // Expect values to lose type information upon export.
   expect(typeof exports.records[r1]).toBe('string');
@@ -166,10 +174,14 @@ test('Role Registry miscellaneous functions', () => {
   // Size should be the same.
   expect(impReg.size()).toBe(2);
   expect(Object.keys(impReg.records).length).toBe(2);
-  // Type information should be added now.
+  // Type information should be added now, unless data is a string type.
   expect(typeof impReg.records[r1]).toBe('string');
   expect(typeof impReg.records[r2.getId()]).toBe('object');
   expect(impReg.records[r2.getId()] instanceof Role).toBeTruthy();
+
+  expect(() => {
+    impReg.import({});
+  }).toThrow(error.InvalidError);
 });
 
 test('Traversal', () => {
@@ -216,7 +228,7 @@ test('Traversal', () => {
   expect(path.length).toBe(4);
 
   //test the output
-  expect(reg.display(new Role(r1))).toBeTruthy();
+  expect(reg.display()).toBeTruthy();
   expect(reg.toString()).toBeTruthy();
   expect(Registry.display(path)).toBeTruthy();
 });

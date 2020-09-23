@@ -95,6 +95,8 @@ test('Test Resource', function () {
     acl.addResource(res1);
   }).toThrow("Entry 'ACO-1' is already in the registry");
 
+  expect(acl.getResource(res1) === res1).toBeTruthy();
+
   acl.addResource(res1a, res1);
   expect(() => {
     acl.addResource(res1a);
@@ -113,6 +115,9 @@ test('Test Role', function () {
   expect(() => {
     acl.addRole(rol1);
   }).toThrow("Entry 'ARO-1' is already in the registry");
+
+  expect(acl.getRole(rol1) === rol1).toBeTruthy();
+
   acl.addRole(rol1a, rol1);
   expect(() => {
     acl.addRole(rol1a);

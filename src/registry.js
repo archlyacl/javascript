@@ -1,5 +1,5 @@
 const { getValue } = require('./common');
-const { DuplicateError, NotFoundError } = require('./error');
+const { DuplicateError, NotFoundError, InvalidError } = require('./error');
 
 /**
  * The registry for resources and roles.
@@ -94,6 +94,15 @@ Registry.prototype.export = function () {
 };
 
 /**
+ * Gets the "original" record of the entry. The type is dependent on what was used during creation or during import.
+ * @param {string|Object} entry - The entry to retrieve from the records.
+ * @returns {mixed} The return type of this depends on the object stored/instantiated in the records.
+ */
+Registry.prototype.getRecord = function (entry) {
+  return this.records[getValue(entry)];
+};
+
+/**
  * Checks if the entry is stored in the registry.
  *
  * @param {string|Object} entry - The entry to check.
@@ -134,10 +143,11 @@ Registry.prototype.import = function (stored, instantiator) {
     hasClass = typeof instantiator === 'function';
 
   this.registry = {};
-  if (typeof stored.registry === 'object') {
-    for (i in stored.registry) {
-      this.registry[i] = stored.registry[i];
-    }
+  if (typeof stored.registry !== 'object') {
+    throw new InvalidError('stored.registry', 'Property is not a map.');
+  }
+  for (i in stored.registry) {
+    this.registry[i] = stored.registry[i];
   }
   this.records = {};
   for (i in stored.records) {
@@ -166,12 +176,6 @@ Registry.prototype.traverseRoot = function (entry) {
     path = [];
 
   entry = getValue(entry);
-  if (entry == null) {
-    path.push('*');
-
-    return path;
-  }
-
   eId = entry;
 
   while (this.registry[eId] !== undefined) {

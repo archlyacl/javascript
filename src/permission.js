@@ -1,6 +1,7 @@
 const { getValue } = require('./common');
 
 const PERM_NOT_FOUND = "Permission '_perm_' not found on '_role_' for '_res_'.";
+const SEP = '::';
 
 const Types = {
   ALL: 'ALL',
@@ -23,7 +24,7 @@ function Permission() {
   this.makeDefaultDeny();
 }
 
-Permission.DEFAULT_KEY = '*::*';
+Permission.DEFAULT_KEY = '*' + SEP + '*';
 
 /**
  * Visualization of the permissions in tuples.
@@ -428,7 +429,7 @@ Permission.prototype.remove = function (role, resource, action) {
 Permission.prototype.removeByResource = function (resourceId) {
   var key,
     toRemove = [],
-    resId = '::' + resourceId;
+    resId = SEP + resourceId;
 
   for (key in this.perms) {
     if (this.perms.hasOwnProperty(key)) {
@@ -450,7 +451,7 @@ Permission.prototype.removeByResource = function (resourceId) {
 Permission.prototype.removeByRole = function (roleId) {
   var key,
     toRemove = [],
-    rolId = roleId + '::';
+    rolId = roleId + SEP;
 
   for (key in this.perms) {
     if (this.perms.hasOwnProperty(key)) {
@@ -484,7 +485,7 @@ Permission.prototype.makeKey = function (role, resource) {
   var aco = resource ? resource : '*',
     aro = role ? role : '*';
 
-  return aro + '::' + aco;
+  return aro + SEP + aco;
 };
 
 /**
@@ -525,5 +526,6 @@ function _remove(perms, keys) {
 
 module.exports = {
   Permission,
+  SEP,
   Types,
 };

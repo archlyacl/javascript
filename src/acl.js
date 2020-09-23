@@ -178,6 +178,24 @@ Acl.prototype.exportRoles = function () {
 };
 
 /**
+ * Gets the object instance as stored in the registry.
+ * @param {string|Object} entry
+ * @returns {mixed}
+ */
+Acl.prototype.getResource = function (entry) {
+  return this.resources.getRecord(entry);
+};
+
+/**
+ * Gets the object instance as stored in the registry.
+ * @param {string|Object} entry
+ * @returns {mixed}
+ */
+Acl.prototype.getRole = function (entry) {
+  return this.roles.getRecord(entry);
+};
+
+/**
  * Imports the exported object containing the keys `permission`, `resources` and `roles`.
  *
  * @param {Ojbect} acl - The exported ACL object.
