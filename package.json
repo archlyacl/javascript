@@ -1,6 +1,6 @@
 {
   "name": "archly",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Archly is a library for creating a hierarchy-based access control list (ACL).",
   "main": "dist/archly.common.min.js",
   "unpkg": "dist/archly.browser.min.js",
@@ -27,9 +27,9 @@
   "author": "Chua Chee How <chuacheehow@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rojakcoder/archly/issues"
+    "url": "https://github.com/archlyacl/javascript/issues"
   },
-  "homepage": "https://github.com/rojakcoder/archly#readme",
+  "homepage": "https://github.com/archlyacl/javascript#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
     "jest": "^24.9.0",
