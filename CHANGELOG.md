@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.0.3] - 2020-09-26
+
+### Added
+
+- More test coverage.
+
+### Changed
+
+- Fixes a bug with the InvalidError class.
+
 ## [1.0.1] - 2020-09-24
 
 Major rewrite from earlier version, thus requiring a major version change.

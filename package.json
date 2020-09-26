@@ -1,6 +1,6 @@
 {
   "name": "archly",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Archly is a library for creating a hierarchy-based access control list (ACL).",
   "main": "dist/archly.common.min.js",
   "unpkg": "dist/archly.browser.min.js",
@@ -11,7 +11,7 @@
     "build": "rollup -c scripts/rollup.config.js",
     "package": "rollup -c scripts/rollup.package.config.js",
     "prepublish": "npm run test && npm run package",
-    "publish": "npm run prepublish && npm publish",
+    "pub": "npm run prepublish && npm publish",
     "docs": "npx jsdoc -c scripts/jsdoc.config.js -P package.json",
     "test": "jest --config scripts/jest.config.js",
     "test-coverage": "jest --coverage --config scripts/jest.config.js"

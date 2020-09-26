@@ -746,3 +746,62 @@ test('Test Export/Import', function () {
   expect(Object.keys(newRoles).length < Object.keys(roles).length); // Exported roles is unaffected
   expect(Object.keys(newPerms).length < Object.keys(perms).length); // Exported permissions is unaffected
 });
+
+test('Test Export/Import All', function () {
+  var a1 = archly.newAcl();
+  // Verify that the keys exported are as expected.
+  var all = a1.exportAll();
+  expect(all.permissions).toEqual({
+    '*::*': {
+      ALL: false,
+    },
+  });
+  expect(all.resources).toEqual({
+    records: {},
+    registry: {},
+  }); // No records added yet.
+  expect(all.roles).toEqual({
+    records: {},
+    registry: {},
+  }); // No records added yet.
+
+  var a2 = archly.newAcl();
+  var re1 = 're1';
+  var ro1 = 'ro1';
+  var inMap = {
+    roles: {
+      records: {
+        ro1,
+      },
+      registry: {
+        ro1,
+      },
+    },
+    resources: {
+      records: {
+        re1,
+      },
+      registry: {
+        re1,
+      },
+    },
+    permissions: {},
+  };
+  a2.clear(); // Need to clear before import can take place.
+  a2.importAll(inMap);
+  expect(a2.roles.size()).toBe(1);
+  expect(a2.resources.size()).toBe(1);
+  expect(a2.permissions.size()).toBe(0);
+  // Expect elements to return as-is i.e. a string.
+  expect(a2.getRole(ro1)).toBe(ro1);
+  expect(a2.getResource(re1)).toBe(re1);
+
+  a2.clear();
+  a2.importAll(inMap, Role, Resource);
+  expect(a2.roles.size()).toBe(1);
+  expect(a2.resources.size()).toBe(1);
+  expect(a2.permissions.size()).toBe(0); // Removed after clear().
+  // Expect elements to return instantiated.
+  expect(a2.getRole(ro1) instanceof Role).toBe(true);
+  expect(a2.getResource(re1) instanceof Resource).toBe(true);
+});

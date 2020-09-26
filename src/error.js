@@ -27,7 +27,7 @@ class DuplicateError extends Error {
 class InvalidError extends Error {
   constructor(value, note) {
     super();
-    this.message = INVALID_VALUE.replace(/_entry_/g, value).replace(
+    this.message = INVALID_VALUE.replace(/_param_/g, value).replace(
       /_desc_/g,
       note
     );

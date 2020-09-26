@@ -151,12 +151,8 @@ Registry.prototype.import = function (stored, instantiator) {
   }
   this.records = {};
   for (i in stored.records) {
-    if (typeof stored.records[i] === 'object') {
-      if (hasClass) {
-        this.records[i] = new instantiator(stored.records[i]);
-      } else {
-        this.records[i] = stored.records[i];
-      }
+    if (hasClass) {
+      this.records[i] = new instantiator(stored.records[i]);
     } else {
       this.records[i] = stored.records[i];
     }

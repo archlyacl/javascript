@@ -174,8 +174,8 @@ test('Role Registry miscellaneous functions', () => {
   // Size should be the same.
   expect(impReg.size()).toBe(2);
   expect(Object.keys(impReg.records).length).toBe(2);
-  // Type information should be added now, unless data is a string type.
-  expect(typeof impReg.records[r1]).toBe('string');
+  // Type information should be added now, even if data is a string type.
+  expect(impReg.records[r1] instanceof Role).toBe(true);
   expect(typeof impReg.records[r2.getId()]).toBe('object');
   expect(impReg.records[r2.getId()] instanceof Role).toBeTruthy();
 
