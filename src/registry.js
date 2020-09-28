@@ -1,3 +1,6 @@
+/**
+ * @module registry
+ */
 const { getValue } = require('./common');
 const { DuplicateError, NotFoundError, InvalidError } = require('./error');
 

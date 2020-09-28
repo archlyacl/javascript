@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.1.0] - 2020-09-28
+
+### Added
+
+- New API methods to help check for the integrity of imported ACL schemas.
+
 ## [1.0.3] - 2020-09-26
 
 ### Added

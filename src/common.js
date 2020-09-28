@@ -31,5 +31,6 @@ function getValue(val) {
 }
 
 module.exports = {
+  ASTERISK: '*',
   getValue: getValue,
 };

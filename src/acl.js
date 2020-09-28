@@ -1,6 +1,10 @@
+/**
+ * @module acl
+ */
+
+const { ASTERISK } = require('./common');
 const { Types } = require('./permission');
 
-const _ALL = '*';
 const _NON_EMPTY = '_reg_ registry is not empty';
 
 /**
@@ -45,7 +49,7 @@ Acl.prototype.allowAllResource = function (role) {
     //duplicate entry
     //do nothing
   }
-  this.permissions.allow(role, _ALL);
+  this.permissions.allow(role, ASTERISK);
 };
 
 /**
@@ -59,7 +63,7 @@ Acl.prototype.allowAllRole = function (resource) {
     //duplicate entry
     //do nothing
   }
-  this.permissions.allow(_ALL, resource);
+  this.permissions.allow(ASTERISK, resource);
 };
 
 /**
@@ -101,7 +105,7 @@ Acl.prototype.denyAllResource = function (role) {
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(role, _ALL);
+  this.permissions.deny(role, ASTERISK);
 };
 
 /**
@@ -114,7 +118,7 @@ Acl.prototype.denyAllRole = function (resource) {
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(_ALL, resource);
+  this.permissions.deny(ASTERISK, resource);
 };
 
 /**
@@ -178,6 +182,36 @@ Acl.prototype.exportRoles = function () {
 };
 
 /**
+ * Checks the permissions against the roles and resources registries to determine if there are permissions for which there are no roles/resources.
+ * @returns {Object|null} A map with the keys `resource` and `role`, both of which are string arrays. If the permissions record is empty, returns null instead.
+ */
+Acl.prototype.getOrphanPermissions = function () {
+  var i,
+    resourceKeys,
+    roleKeys,
+    orphan = {
+      resource: [],
+      role: [],
+    };
+  if (this.permissions.size() === 0) {
+    return null;
+  }
+  resourceKeys = this.permissions.getResourceKeys();
+  for (i = 0; i < resourceKeys.length; i++) {
+    if (!this.resources.has(resourceKeys[i])) {
+      orphan.resource.push(resourceKeys[i]);
+    }
+  }
+  roleKeys = this.permissions.getRoleKeys();
+  for (i = 0; i < roleKeys.length; i++) {
+    if (!this.roles.has(roleKeys[i])) {
+      orphan.role.push(roleKeys[i]);
+    }
+  }
+  return orphan;
+};
+
+/**
  * Gets the object instance as stored in the registry.
  * @param {string|Object} entry
  * @returns {mixed}
@@ -193,6 +227,25 @@ Acl.prototype.getResource = function (entry) {
  */
 Acl.prototype.getRole = function (entry) {
   return this.roles.getRecord(entry);
+};
+
+/**
+ * Checks whether there are permissions for which there are no entries in either the roles or resources registries.
+ *
+ * @returns {boolean} Returns true if there are any orphan entries. False otherwise, including if the permissions records are empty.
+ */
+Acl.prototype.hasOrphanPermissions = function () {
+  var orphan = this.getOrphanPermissions();
+  if (orphan === null) {
+    return false;
+  }
+  if (Object.keys(orphan.resource).length > 0) {
+    return true;
+  }
+  if (Object.keys(orphan.role).length > 0) {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -269,22 +322,18 @@ Acl.prototype.isAllowed = function (role, resource, action) {
 
   //check role-resource
   for (r in rolePath) {
-    if (rolePath.hasOwnProperty(r)) {
-      aro = rolePath[r];
-      for (c in resPath) {
-        if (resPath.hasOwnProperty(c)) {
-          aco = resPath[c];
-          if (action === Types.ALL) {
-            grant = this.permissions.isAllowedAll(aro, aco);
-          } else {
-            grant = this.permissions.isAllowed(aro, aco, action);
-          }
-
-          if (grant !== null) {
-            return grant;
-          } //else null, continue
-        }
+    aro = rolePath[r];
+    for (c in resPath) {
+      aco = resPath[c];
+      if (action === Types.ALL) {
+        grant = this.permissions.isAllowedAll(aro, aco);
+      } else {
+        grant = this.permissions.isAllowed(aro, aco, action);
       }
+
+      if (grant !== null) {
+        return grant;
+      } //else null, continue
     }
   }
 
@@ -314,22 +363,18 @@ Acl.prototype.isDenied = function (role, resource, action) {
 
   //check role-resource
   for (r in rolePath) {
-    if (rolePath.hasOwnProperty(r)) {
-      aro = rolePath[r];
-      for (c in resPath) {
-        if (resPath.hasOwnProperty(c)) {
-          aco = resPath[c];
-          if (action === Types.ALL) {
-            grant = this.permissions.isDeniedAll(aro, aco);
-          } else {
-            grant = this.permissions.isDenied(aro, aco, action);
-          }
-
-          if (grant !== null) {
-            return grant;
-          } //else null, continue
-        }
+    aro = rolePath[r];
+    for (c in resPath) {
+      aco = resPath[c];
+      if (action === Types.ALL) {
+        grant = this.permissions.isDeniedAll(aro, aco);
+      } else {
+        grant = this.permissions.isDenied(aro, aco, action);
       }
+
+      if (grant !== null) {
+        return grant;
+      } //else null, continue
     }
   }
 

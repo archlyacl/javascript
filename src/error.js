@@ -1,10 +1,10 @@
-const DUPLICATE_ENTRIES = "Entry '_entry_' is already in the registry.";
-const ENTRY_NOT_FOUND = "Entry '_entry_' is not in registry.";
-const INVALID_VALUE = "Invalid value for '_param_'. _desc_";
-
 /**
  * @module error
  */
+
+const DUPLICATE_ENTRIES = "Entry '_entry_' is already in the registry.";
+const ENTRY_NOT_FOUND = "Entry '_entry_' is not in registry.";
+const INVALID_VALUE = "Invalid value for '_param_'. _desc_";
 
 /**
  * Error type: duplicate.

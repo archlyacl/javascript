@@ -3,11 +3,10 @@
 module.exports = {
   plugins: ['plugins/markdown'],
   source: {
-    include: [
-      '.',
-      'src',
-    ],
+    include: ['src'],
     includePattern: '.+\\.js$',
   },
+  templates: {
+    cleverLinks: true,
+  },
 };
-

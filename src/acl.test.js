@@ -805,3 +805,109 @@ test('Test Export/Import All', function () {
   expect(a2.getRole(ro1) instanceof Role).toBe(true);
   expect(a2.getResource(re1) instanceof Resource).toBe(true);
 });
+
+describe('Orphan permissions check', () => {
+  test('Empty ACL', () => {
+    var A = archly.newAcl();
+
+    expect(A.hasOrphanPermissions()).toBe(false);
+    expect(A.getOrphanPermissions()).toEqual({
+      resource: [],
+      role: [],
+    });
+    A.clear();
+    expect(A.hasOrphanPermissions()).toBe(false);
+    expect(A.getOrphanPermissions()).toBeNull();
+  });
+
+  test('No orphans', () => {
+    var A = archly.newAcl(),
+      res1 = 'RES1',
+      rol1 = 'ROL1';
+
+    A.allow(rol1, res1);
+    expect(A.hasOrphanPermissions()).toBe(false);
+    expect(A.getOrphanPermissions()).toEqual({
+      resource: [],
+      role: [],
+    });
+  });
+
+  test('Has orphans', () => {
+    var A,
+      re1 = 're1',
+      ro1 = 'ro1',
+      inMap = {
+        roles: {
+          records: {
+            ro1,
+          },
+          registry: {
+            ro1,
+          },
+        },
+        resources: {
+          records: {
+            re1,
+          },
+          registry: {
+            re1,
+          },
+        },
+        permissions: {},
+      };
+
+    A = archly.newAcl();
+    A.clear();
+    A.importAll(inMap);
+    expect(A.hasOrphanPermissions()).toBe(false);
+    expect(A.getOrphanPermissions()).toBeNull();
+
+    inMap.permissions = {
+      'ro0::re0': {
+        ALL: true,
+      },
+    };
+    A.clear();
+    A.importAll(inMap);
+    expect(A.hasOrphanPermissions()).toBe(true);
+    expect(A.getOrphanPermissions()).toEqual({
+      resource: ['re0'],
+      role: ['ro0'],
+    });
+
+    inMap.permissions = {
+      'ro1::re0': {
+        ALL: true,
+      },
+    };
+    A.clear();
+    A.importAll(inMap);
+    expect(A.hasOrphanPermissions()).toBe(true);
+    expect(A.getOrphanPermissions()).toEqual({
+      resource: ['re0'],
+      role: [],
+    });
+
+    inMap.permissions = {
+      'ro0::re1': {
+        ALL: true,
+      },
+    };
+    A.clear();
+    A.importAll(inMap);
+    expect(A.hasOrphanPermissions()).toBe(true);
+    expect(A.getOrphanPermissions()).toEqual({
+      resource: [],
+      role: ['ro0'],
+    });
+  });
+});
+
+describe('Code coverage', () => {
+  var A = archly.newAcl();
+  A.clear();
+  // No permissions defined means no access/deny values.
+  expect(A.isDenied('*', '*', 'ALL')).toBe(false);
+  expect(A.isAllowed('*', '*', 'ALL')).toBe(false);
+});

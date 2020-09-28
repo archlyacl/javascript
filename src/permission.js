@@ -1,4 +1,9 @@
-const { getValue } = require('./common');
+/**
+ * @module permission
+ */
+
+const { ASTERISK, getValue } = require('./common');
+const { InvalidError } = require('./error');
 
 const PERM_NOT_FOUND = "Permission '_perm_' not found on '_role_' for '_res_'.";
 const SEP = '::';
@@ -24,7 +29,7 @@ function Permission() {
   this.makeDefaultDeny();
 }
 
-Permission.DEFAULT_KEY = '*' + SEP + '*';
+Permission.DEFAULT_KEY = ASTERISK + SEP + ASTERISK;
 
 /**
  * Visualization of the permissions in tuples.
@@ -39,20 +44,16 @@ Permission.prototype.toString = function () {
   out.push('\n-------\n');
 
   for (tuple in this.perms) {
-    if (this.perms.hasOwnProperty(tuple)) {
-      out.push('- ');
-      out.push(tuple);
+    out.push('- ');
+    out.push(tuple);
+    out.push('\n');
+    entry = this.perms[tuple];
+    for (action in entry) {
+      out.push('\t');
+      out.push(action);
+      out.push('\t');
+      out.push(entry[action]);
       out.push('\n');
-      entry = this.perms[tuple];
-      for (action in entry) {
-        if (entry.hasOwnProperty(action)) {
-          out.push('\t');
-          out.push(action);
-          out.push('\t');
-          out.push(entry[action]);
-          out.push('\n');
-        }
-      }
     }
   }
 
@@ -131,17 +132,51 @@ Permission.prototype.export = function () {
     clone = {};
 
   for (i in this.perms) {
-    if (this.perms.hasOwnProperty(i)) {
-      clone[i] = {};
-      for (j in this.perms[i]) {
-        if (this.perms[i].hasOwnProperty(j)) {
-          clone[i][j] = this.perms[i][j];
-        }
-      }
+    clone[i] = {};
+    for (j in this.perms[i]) {
+      clone[i][j] = this.perms[i][j];
     }
   }
 
   return clone;
+};
+
+/**
+ * Gets unique keys of resources.
+ * @returns {string[]}
+ */
+Permission.prototype.getResourceKeys = function () {
+  var i,
+    resourceKeys = [],
+    allKeys = this.separateKeys();
+  for (i = 0; i < allKeys.resource.length; i++) {
+    if (
+      allKeys.resource[i] !== ASTERISK &&
+      resourceKeys.indexOf(allKeys.resource[i]) === -1
+    ) {
+      resourceKeys.push(allKeys.resource[i]);
+    }
+  }
+  return resourceKeys;
+};
+
+/**
+ * Gets unique keys of roles.
+ * @returns {string[]}
+ */
+Permission.prototype.getRoleKeys = function () {
+  var i,
+    roleKeys = [],
+    allKeys = this.separateKeys();
+  for (i = 0; i < allKeys.role.length; i++) {
+    if (
+      allKeys.role[i] !== ASTERISK &&
+      roleKeys.indexOf(allKeys.role[i]) === -1
+    ) {
+      roleKeys.push(allKeys.role[i]);
+    }
+  }
+  return roleKeys;
 };
 
 /**
@@ -201,13 +236,11 @@ Permission.prototype.isAllowedAll = function (role, resource) {
 
   perm = this.perms[key];
   for (k in perm) {
-    if (perm.hasOwnProperty(k)) {
-      if (perm[k] === false) {
-        return false;
-      }
-      if (k !== Types.ALL) {
-        allSet++;
-      }
+    if (perm[k] === false) {
+      return false;
+    }
+    if (k !== Types.ALL) {
+      allSet++;
     }
   }
   if (perm.hasOwnProperty(Types.ALL)) {
@@ -278,14 +311,12 @@ Permission.prototype.isDeniedAll = function (role, resource) {
 
   perm = this.perms[key];
   for (k in perm) {
-    if (perm.hasOwnProperty(k)) {
-      //if any entry is true, resource is NOT denied
-      if (perm[k]) {
-        return false;
-      }
-      if (k !== Types.ALL) {
-        allSet++;
-      }
+    //if any entry is true, resource is NOT denied
+    if (perm[k]) {
+      return false;
+    }
+    if (k !== Types.ALL) {
+      allSet++;
     }
   }
   if (perm.hasOwnProperty(Types.ALL)) {
@@ -361,11 +392,9 @@ Permission.prototype.remove = function (role, resource, action) {
   var orig,
     perm,
     type,
-    resValue = getValue(resource),
-    roleValue = getValue(role),
-    key = this.makeKey(roleValue, resValue),
-    resId = resValue ? resValue : '*',
-    roleId = roleValue ? roleValue : '*';
+    resId = getValue(resource),
+    roleId = getValue(role),
+    key = this.makeKey(roleId, resId);
 
   if (!action) {
     action = Types.ALL;
@@ -394,10 +423,8 @@ Permission.prototype.remove = function (role, resource, action) {
     delete perm[Types.ALL];
 
     for (type in Types) {
-      if (Types.hasOwnProperty(type)) {
-        if (type !== action && type !== Types.ALL) {
-          perm[type] = orig;
-        }
+      if (type !== action && type !== Types.ALL) {
+        perm[type] = orig;
       }
     }
   } else if (action === Types.ALL) {
@@ -432,10 +459,8 @@ Permission.prototype.removeByResource = function (resourceId) {
     resId = SEP + resourceId;
 
   for (key in this.perms) {
-    if (this.perms.hasOwnProperty(key)) {
-      if (key.endsWith(resId)) {
-        toRemove.push(key);
-      }
+    if (key.endsWith(resId)) {
+      toRemove.push(key);
     }
   }
 
@@ -454,10 +479,8 @@ Permission.prototype.removeByRole = function (roleId) {
     rolId = roleId + SEP;
 
   for (key in this.perms) {
-    if (this.perms.hasOwnProperty(key)) {
-      if (key.startsWith(rolId)) {
-        toRemove.push(key);
-      }
+    if (key.startsWith(rolId)) {
+      toRemove.push(key);
     }
   }
 
@@ -482,8 +505,8 @@ Permission.prototype.size = function () {
  * @return {string} The key of the permission.
  */
 Permission.prototype.makeKey = function (role, resource) {
-  var aco = resource ? resource : '*',
-    aro = role ? role : '*';
+  var aco = resource ? resource : ASTERISK,
+    aro = role ? role : ASTERISK;
 
   return aro + SEP + aco;
 };
@@ -505,6 +528,44 @@ Permission.prototype.makePermission = function (action, allow) {
 };
 
 /**
+ * Separates the key into its component identifiers.
+ * @param {string} key - The key to separate into role and resource identifiers.
+ * @returns {string[]} A 2-celled array with the role identifier in position 0 and resource identifier in position 1.
+ * @throws {InvalidError} Throws this error if the key is malformed.
+ */
+Permission.prototype.separateKey = function (key) {
+  var parts = key.split(SEP);
+  if (parts.length !== 2) {
+    throw new InvalidError(
+      'key',
+      `Must have the form "{string}${SEP}{string}"`
+    );
+  }
+  return parts;
+};
+
+/**
+ * Separates the keys in the permissions.
+ * @returns {Object} Returns an object with the properties `resource` and `role` both of which are arrays of IDs.
+ * @throws {InvalidError} Throws this error from `separateKey` if any of the keys is malformed.
+ */
+Permission.prototype.separateKeys = function () {
+  var i,
+    parts,
+    allKeys = {
+      resource: [],
+      role: [],
+    },
+    keys = Object.keys(this.perms);
+  for (i = 0; i < keys.length; i++) {
+    parts = this.separateKey(keys[i]);
+    allKeys.resource.push(parts[1]);
+    allKeys.role.push(parts[0]);
+  }
+  return allKeys;
+};
+
+/**
  * Helper function called by remove functions to remove permissions.
  * @param {Object} perms - The map of permissions - Permission.perms.
  * @param {string[]} keys - The array of keys to remove from the permission.
@@ -515,10 +576,8 @@ function _remove(perms, keys) {
     removed = 0;
 
   for (i = 0; i < keys.length; i++) {
-    if (perms.hasOwnProperty(keys[i])) {
-      delete perms[keys[i]];
-      removed++;
-    }
+    delete perms[keys[i]];
+    removed++;
   }
 
   return removed;
