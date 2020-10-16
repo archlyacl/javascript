@@ -2,7 +2,7 @@
  * @module acl
  */
 
-const { ASTERISK } = require('./common');
+const common = require('./common');
 const { Types } = require('./permission');
 
 const _NON_EMPTY = '_reg_ registry is not empty';
@@ -49,7 +49,7 @@ Acl.prototype.allowAllResource = function (role) {
     //duplicate entry
     //do nothing
   }
-  this.permissions.allow(role, ASTERISK);
+  this.permissions.allow(role, common.ASTERISK);
 };
 
 /**
@@ -63,7 +63,7 @@ Acl.prototype.allowAllRole = function (resource) {
     //duplicate entry
     //do nothing
   }
-  this.permissions.allow(ASTERISK, resource);
+  this.permissions.allow(common.ASTERISK, resource);
 };
 
 /**
@@ -105,7 +105,7 @@ Acl.prototype.denyAllResource = function (role) {
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(role, ASTERISK);
+  this.permissions.deny(role, common.ASTERISK);
 };
 
 /**
@@ -118,7 +118,7 @@ Acl.prototype.denyAllRole = function (resource) {
   } catch (e) {
     //do nothing
   }
-  this.permissions.deny(ASTERISK, resource);
+  this.permissions.deny(common.ASTERISK, resource);
 };
 
 /**
@@ -320,6 +320,11 @@ Acl.prototype.isAllowed = function (role, resource, action) {
     action = Types.ALL;
   }
 
+  if (this.permissions.traceLevel >= common.TRACE_LEVEL_1) {
+    console.debug('Resource path to root:', resPath);
+    console.debug('Role path to root:', rolePath);
+  }
+
   //check role-resource
   for (r in rolePath) {
     aro = rolePath[r];
@@ -440,6 +445,29 @@ Acl.prototype.removeRole = function (role, removeDescendants) {
   for (i = 0; i < roles.length; i++) {
     this.permissions.removeByRole(roles[i]);
   }
+};
+
+/**
+ * Turns debugging off.
+ */
+Acl.prototype.setTraceLevel0 = function () {
+  this.permissions.traceLevel = common.TRACE_LEVEL_0;
+};
+
+/**
+ * Turns debugging to level 1.
+ * Shows the path of the resource and role in their respective registries.
+ */
+Acl.prototype.setTraceLevel1 = function () {
+  this.permissions.traceLevel = common.TRACE_LEVEL_1;
+};
+
+/**
+ * Turns debugging to level 2.
+ * In addition to showing the trace in level 1, level 2 also shows the evaluation of permissions within the permissions register.
+ */
+Acl.prototype.setTraceLevel2 = function () {
+  this.permissions.traceLevel = common.TRACE_LEVEL_2;
 };
 
 /**
