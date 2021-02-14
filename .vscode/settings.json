@@ -1,7 +1,9 @@
 {
   "editor.tabSize": 2,
+  "editor.wordWrap": "bounded",
   "files.trimTrailingWhitespace": true,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.trailingComma": "es5"
+  "prettier.trailingComma": "es5",
+  "javascript.preferences.quoteStyle": "single"
 }

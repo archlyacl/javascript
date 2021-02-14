@@ -1,3 +1,4 @@
+const common = require('./common');
 const error = require('./error');
 const { Types } = require('./permission');
 const archly = require('./archly');
@@ -136,30 +137,46 @@ test('Test Allow', function () {
     rol2 = new Role('ARO-2'),
     acl = archly.newAcl();
 
+  // acl.setTraceLevel2();
   expect(acl.isAllowed(rol1, res1)).toBe(false); // Permission not set.
+
   acl.allow(rol1, res1);
   expect(acl.isAllowed(rol1, res1)).toBe(true);
-
+  expect(acl.isAllowedStrict(rol1, res1)).toBe(true);
   expect(acl.isAllowed(rol0, res1)).toBe(false); // Permission not set.
+  expect(acl.isAllowedStrict(rol0, res1)).toBe(false);
   expect(acl.isAllowed(rol0, res2)).toBe(false);
+  expect(acl.isAllowedStrict(rol0, res1)).toBe(false);
+
   acl.allowAllResource(rol0);
   expect(acl.isAllowed(rol0, res1)).toBe(true); // Granted via all resource.
+  expect(acl.isAllowedStrict(rol0, res1)).toBe(false);
   expect(acl.isAllowed(rol0, res2)).toBe(true);
+  expect(acl.isAllowedStrict(rol0, res2)).toBe(false);
   expect(acl.isAllowed(rol1, res0)).toBe(false);
+  expect(acl.isAllowedStrict(rol1, res0)).toBe(false);
   expect(acl.isAllowed(rol2, res0)).toBe(false);
+  expect(acl.isAllowedStrict(rol2, res0)).toBe(false);
+  expect(acl.isAllowedStrict(rol0, common.ASTERISK)).toBe(true);
+
   acl.allowAllRole(res0);
   expect(acl.isAllowed(rol1, res0)).toBe(true);
+  expect(acl.isAllowedStrict(rol1, res0)).toBe(false);
   expect(acl.isAllowed(rol2, res0)).toBe(true);
+  expect(acl.isAllowedStrict(rol2, res0)).toBe(false);
+  expect(acl.isAllowedStrict(common.ASTERISK, res0)).toBe(true);
 
-  expect(acl.isAllowed(rol2, res2, Types.CREATE)); // Permission not set.
-  expect(acl.isAllowed(rol2, res2, Types.READ));
+  expect(acl.isAllowed(rol2, res2, Types.CREATE)).toBe(false); // Permission not set.
+  expect(acl.isAllowed(rol2, res2, Types.READ)).toBe(false);
+
   acl.allow(rol2, res2, Types.CREATE);
-  expect(acl.isAllowed(rol2, res2, Types.CREATE)); // Role2 allowed CREATE access.
-  expect(acl.isAllowed(rol2, res2, Types.READ));
+  expect(acl.isAllowed(rol2, res2, Types.CREATE)).toBe(true); // Role2 allowed CREATE access.
+  expect(acl.isAllowedStrict(rol2, res2, Types.CREATE)).toBe(true);
+  expect(acl.isAllowed(rol2, res2, Types.READ)).toBe(false);
 
-  acl.allowAllResource(rol0); // Repeated addition of roles does not throw error.
-  acl.allowAllRole(res0); // Repeated addition of resource does not throw error.
-  acl.allow(rol2, res2, Types.CREATE); // Repeated addition of role and resource does not throw error.
+  expect(acl.allowAllResource(rol0)).toBeUndefined(); // Repeated addition of role does not throw error.
+  expect(acl.allowAllRole(res0)).toBeUndefined(); // Repeated addition of resource does not throw error.
+  expect(acl.allow(rol2, res2, Types.CREATE)).toBeUndefined(); // Repeated addition of role and resource does not throw error.
 });
 
 test('Test Deny', function () {
@@ -177,27 +194,41 @@ test('Test Deny', function () {
   acl.deny(rol1, res1);
   // Role A denied access to Res A.
   expect(acl.isDenied(rol1, res1)).toBe(true);
+  expect(acl.isDeniedStrict(rol1, res1)).toBe(true);
   expect(acl.isDenied(rol0, res1)).toBe(false); // Permission not set.
+  expect(acl.isDeniedStrict(rol0, res1)).toBe(false);
   expect(acl.isDenied(rol0, res2)).toBe(false);
+  expect(acl.isDeniedStrict(rol0, res1)).toBe(false);
 
   acl.denyAllResource(rol0);
   expect(acl.isDenied(rol0, res1)).toBe(true); // Denied via all resource.
+  expect(acl.isDeniedStrict(rol0, res1)).toBe(false);
   expect(acl.isDenied(rol0, res2)).toBe(true);
+  expect(acl.isDeniedStrict(rol0, res2)).toBe(false);
   expect(acl.isDenied(rol1, res0)).toBe(false); // Permission not set.
+  expect(acl.isDeniedStrict(rol1, res0)).toBe(false);
   expect(acl.isDenied(rol2, res0)).toBe(false);
+  expect(acl.isDeniedStrict(rol2, res0)).toBe(false);
+  expect(acl.isDeniedStrict(rol0, common.ASTERISK)).toBe(true);
 
   acl.denyAllRole(res0);
   expect(acl.isDenied(rol1, res0)).toBe(true); // Denied via all role.
+  expect(acl.isDeniedStrict(rol1, res0)).toBe(false);
   expect(acl.isDenied(rol2, res0)).toBe(true);
+  expect(acl.isDeniedStrict(rol2, res0)).toBe(false);
+  expect(acl.isDeniedStrict(common.ASTERISK, res0)).toBe(true);
 
   expect(acl.isDenied(rol2, res2, Types.CREATE)).toBe(false); // Permission not set.
   expect(acl.isDenied(rol2, res2, Types.READ)).toBe(false);
 
   acl.deny(rol2, res2, Types.CREATE);
-  expect(acl.isDenied(rol2, res2, Types.CREATE)).toBe(true); // Role  2 denied CREATE access to Res 2
+  expect(acl.isDenied(rol2, res2, Types.CREATE)).toBe(true); // Role2 denied CREATE access to Res2
+  expect(acl.isDeniedStrict(rol2, res2, Types.CREATE)).toBe(true);
   expect(acl.isDenied(rol2, res2, Types.READ)).toBe(false); // Permission not set.
 
   expect(acl.denyAllResource(rol0)).toBeUndefined(); // Repeated addition of role does not throw error.
+  expect(acl.denyAllRole(res0)).toBeUndefined(); // Repeated addition of resource does not throw error.
+  expect(acl.deny(rol2, res2, Types.CREATE)).toBeUndefined(); // Repeated addition of role and resource does not throw error.
 });
 
 test('Test Remove', function () {
@@ -911,3 +942,17 @@ describe('Code coverage', () => {
   expect(A.isDenied('*', '*', 'ALL')).toBe(false);
   expect(A.isAllowed('*', '*', 'ALL')).toBe(false);
 });
+
+describe('setTraceLevels', () => {
+  var a = archly.newAcl();
+  a.setTraceLevel0();
+  expect(a.permissions.traceLevel).toBe(common.TRACE_LEVEL_0);
+  a.setTraceLevel1();
+  expect(a.permissions.traceLevel).toBe(common.TRACE_LEVEL_1);
+  a.setTraceLevel2();
+  expect(a.permissions.traceLevel).toBe(common.TRACE_LEVEL_2);
+  a.setTraceLevel3();
+  expect(a.permissions.traceLevel).toBe(common.TRACE_LEVEL_3);
+  a.setTraceLevel4();
+  expect(a.permissions.traceLevel).toBe(common.TRACE_LEVEL_4);
+})

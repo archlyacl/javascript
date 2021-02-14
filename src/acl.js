@@ -320,9 +320,10 @@ Acl.prototype.isAllowed = function (role, resource, action) {
     action = Types.ALL;
   }
 
+  /* istanbul ignore next */
   if (this.permissions.traceLevel >= common.TRACE_LEVEL_1) {
-    console.debug('Resource path to root:', resPath);
-    console.debug('Role path to root:', rolePath);
+    console.debug('isAllowed - Resource path to root:', resPath);
+    console.debug('isAllowed - Role path to root:', rolePath);
   }
 
   //check role-resource
@@ -342,6 +343,36 @@ Acl.prototype.isAllowed = function (role, resource, action) {
     }
   }
 
+  return false;
+};
+
+/**
+ * Checks if a role has explicit access to a resource.
+ *
+ * This method does not recursively check for access up the tree.
+ *
+ * @param {string|Object} role
+ * @param {string|Object} resource
+ * @param {string} [action] - The action to check access for. Optional. Default [Types.ALL]{@link module:permission#Types}
+ * @returns {boolean}
+ */
+Acl.prototype.isAllowedStrict = function (role, resource, action) {
+  if (!action) {
+    action = Types.ALL;
+  }
+  /* istanbul ignore next */
+  if (this.permissions.traceLevel >= common.TRACE_LEVEL_1) {
+    console.debug('isAllowedStrict - role:', role, 'resource:', resource);
+  }
+  if (action === Types.ALL) {
+    if (this.permissions.isAllowedAll(role, resource)) {
+      return true;
+    }
+  } else {
+    if (this.permissions.isAllowed(role, resource, action)) {
+      return true;
+    }
+  }
   return false;
 };
 
@@ -366,6 +397,12 @@ Acl.prototype.isDenied = function (role, resource, action) {
     action = Types.ALL;
   }
 
+  /* istanbul ignore next */
+  if (this.permissions.traceLevel >= common.TRACE_LEVEL_1) {
+    console.debug('isDenied - Resource path to root:', resPath);
+    console.debug('isDenied - Role path to root:', rolePath);
+  }
+
   //check role-resource
   for (r in rolePath) {
     aro = rolePath[r];
@@ -383,6 +420,36 @@ Acl.prototype.isDenied = function (role, resource, action) {
     }
   }
 
+  return false;
+};
+
+/**
+ * Checks if a role is explicitly denied access to a resource.
+ *
+ * This method does not recursively check for deny access up the tree.
+ *
+ * @param {string|Object} role
+ * @param {string|Object} resource
+ * @param {string} [action] - The action to check access for. Optional. Default [Types.ALL]{@link module:permission#Types}
+ * @returns {boolean}
+ */
+Acl.prototype.isDeniedStrict = function (role, resource, action) {
+  if (!action) {
+    action = Types.ALL;
+  }
+  /* istanbul ignore next */
+  if (this.permissions.traceLevel >= common.TRACE_LEVEL_1) {
+    console.debug('isAllowedStrict - role:', role, 'resource:', resource);
+  }
+  if (action === Types.ALL) {
+    if (this.permissions.isDeniedAll(role, resource)) {
+      return true;
+    }
+  } else {
+    if (this.permissions.isDenied(role, resource, action)) {
+      return true;
+    }
+  }
   return false;
 };
 
@@ -468,6 +535,22 @@ Acl.prototype.setTraceLevel1 = function () {
  */
 Acl.prototype.setTraceLevel2 = function () {
   this.permissions.traceLevel = common.TRACE_LEVEL_2;
+};
+
+/**
+ * Turns debugging to level 3.
+ * In addition to showing the evaluation in level 2, level 3 also shows the setting of permissions.
+ */
+Acl.prototype.setTraceLevel3 = function () {
+  this.permissions.traceLevel = common.TRACE_LEVEL_3;
+};
+
+/**
+ * Turns debugging to level 4.
+ * In addition to showingthe setting of permissions, level 4 details whether permissions affected are new or existing ones.
+ */
+Acl.prototype.setTraceLevel4 = function () {
+  this.permissions.traceLevel = common.TRACE_LEVEL_4;
 };
 
 /**

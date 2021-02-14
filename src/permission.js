@@ -81,11 +81,31 @@ Permission.prototype.allow = function (role, resource, action) {
   if (!action) {
     action = Types.ALL;
   }
+  /* istanbul ignore next */
+  if (this.traceLevel >= common.TRACE_LEVEL_3) {
+    console.debug(
+      'Grant resource "' +
+        resValue +
+        '" to role "' +
+        roleValue +
+        '" on action "' +
+        action +
+        '".'
+    );
+  }
   if (this.has(key)) {
     perm = this.perms[key];
     perm[action] = true;
+    /* istanbul ignore next */
+    if (this.traceLevel >= common.TRACE_LEVEL_4) {
+      console.debug('Setting existing key "' + key + '":', perm);
+    }
   } else {
     this.perms[key] = this.makePermission(action, true);
+    /* istanbul ignore next */
+    if (this.traceLevel >= common.TRACE_LEVEL_4) {
+      console.debug('Setting new key "' + key + '":', this.perms[key]);
+    }
   }
 };
 
@@ -114,11 +134,31 @@ Permission.prototype.deny = function (role, resource, action) {
   if (!action) {
     action = Types.ALL;
   }
+  /* istanbul ignore next */
+  if (this.traceLevel >= common.TRACE_LEVEL_3) {
+    console.debug(
+      'Deny resource "' +
+        resValue +
+        '" to role "' +
+        roleValue +
+        '" on action "' +
+        action +
+        '".'
+    );
+  }
   if (this.has(key)) {
     perm = this.perms[key];
     perm[action] = false;
+    /* istanbul ignore next */
+    if (this.traceLevel >= common.TRACE_LEVEL_4) {
+      console.debug('Setting existing key "' + key + '":', perm);
+    }
   } else {
     this.perms[key] = this.makePermission(action, false);
+    /* istanbul ignore next */
+    if (this.traceLevel >= common.TRACE_LEVEL_4) {
+      console.debug('Setting new key "' + key + '":', this.perms[key]);
+    }
   }
 };
 
@@ -231,9 +271,16 @@ Permission.prototype.isAllowedAll = function (role, resource) {
   var k,
     perm,
     allSet = 0,
-    key = this.makeKey(role, resource);
+    resId,
+    roleId,
+    key;
+
+  resId = resource ? common.getValue(resource) : common.ASTERISK;
+  roleId = role ? common.getValue(role) : common.ASTERISK;
+  key = this.makeKey(roleId, resId);
 
   if (!this.has(key)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Key "' +
@@ -247,6 +294,7 @@ Permission.prototype.isAllowedAll = function (role, resource) {
   perm = this.perms[key];
   for (k in perm) {
     if (perm[k] === false) {
+      /* istanbul ignore next */
       if (this.traceLevel >= common.TRACE_LEVEL_2) {
         console.debug(
           'Permission "' +
@@ -263,6 +311,7 @@ Permission.prototype.isAllowedAll = function (role, resource) {
     }
   }
   if (perm.hasOwnProperty(Types.ALL)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Permission "' +
@@ -276,6 +325,7 @@ Permission.prototype.isAllowedAll = function (role, resource) {
   }
 
   if (allSet === 4) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'All 4 permissions on key "' +
@@ -286,6 +336,7 @@ Permission.prototype.isAllowedAll = function (role, resource) {
     return true;
   }
 
+  /* istanbul ignore next */
   if (this.traceLevel >= common.TRACE_LEVEL_2) {
     console.debug(
       'Unexpected number of permissions on key "' +
@@ -311,10 +362,14 @@ Permission.prototype.isAllowedAll = function (role, resource) {
  * access. Returns null if no permission is specified.
  */
 Permission.prototype.isAllowed = function (role, resource, action) {
-  var perm,
-    key = this.makeKey(role, resource);
+  var perm, resId, roleId, key;
+
+  resId = resource ? common.getValue(resource) : common.ASTERISK;
+  roleId = role ? common.getValue(role) : common.ASTERISK;
+  key = this.makeKey(roleId, resId);
 
   if (!this.has(key)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Key "' +
@@ -331,6 +386,7 @@ Permission.prototype.isAllowed = function (role, resource, action) {
   if (perm[action] === undefined) {
     //if specific action is not present, check for ALL
     if (perm[Types.ALL] === undefined) {
+      /* istanbul ignore next */
       if (this.traceLevel >= common.TRACE_LEVEL_2) {
         console.debug(
           'Permission "' +
@@ -345,6 +401,7 @@ Permission.prototype.isAllowed = function (role, resource, action) {
       return null;
     }
 
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Permission "' +
@@ -359,6 +416,7 @@ Permission.prototype.isAllowed = function (role, resource, action) {
     return perm[Types.ALL];
   } //else specific action is present
 
+  /* istanbul ignore next */
   if (this.traceLevel >= common.TRACE_LEVEL_2) {
     console.debug(
       'Returns `' +
@@ -387,9 +445,16 @@ Permission.prototype.isDeniedAll = function (role, resource) {
   var k,
     perm,
     allSet = 0,
-    key = this.makeKey(role, resource);
+    resId,
+    roleId,
+    key;
+
+  resId = resource ? common.getValue(resource) : common.ASTERISK;
+  roleId = role ? common.getValue(role) : common.ASTERISK;
+  key = this.makeKey(roleId, resId);
 
   if (!this.has(key)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Key "' +
@@ -404,6 +469,7 @@ Permission.prototype.isDeniedAll = function (role, resource) {
   for (k in perm) {
     //if any entry is true, resource is NOT denied
     if (perm[k]) {
+      /* istanbul ignore next */
       if (this.traceLevel >= common.TRACE_LEVEL_2) {
         console.debug(
           'Permission "' +
@@ -420,6 +486,7 @@ Permission.prototype.isDeniedAll = function (role, resource) {
     }
   }
   if (perm.hasOwnProperty(Types.ALL)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Permission "' +
@@ -433,6 +500,7 @@ Permission.prototype.isDeniedAll = function (role, resource) {
   }
 
   if (allSet === 4) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'All 4 permissions on key "' +
@@ -443,6 +511,7 @@ Permission.prototype.isDeniedAll = function (role, resource) {
     return true;
   }
 
+  /* istanbul ignore next */
   if (this.traceLevel >= common.TRACE_LEVEL_2) {
     console.debug(
       'Unexpected number of permissions on key "' +
@@ -469,10 +538,14 @@ Permission.prototype.isDeniedAll = function (role, resource) {
  * role has access. Returns null if no permission is specified.
  */
 Permission.prototype.isDenied = function (role, resource, action) {
-  var perm,
-    key = this.makeKey(role, resource);
+  var perm, resId, roleId, key;
+
+  resId = resource ? common.getValue(resource) : common.ASTERISK;
+  roleId = role ? common.getValue(role) : common.ASTERISK;
+  key = this.makeKey(roleId, resId);
 
   if (!this.has(key)) {
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Key "' +
@@ -489,6 +562,7 @@ Permission.prototype.isDenied = function (role, resource, action) {
   if (perm[action] === undefined) {
     //if specific action is not present, check for ALL
     if (perm[Types.ALL] === undefined) {
+      /* istanbul ignore next */
       if (this.traceLevel >= common.TRACE_LEVEL_2) {
         console.debug(
           'Permission "' +
@@ -503,6 +577,7 @@ Permission.prototype.isDenied = function (role, resource, action) {
       return null;
     }
 
+    /* istanbul ignore next */
     if (this.traceLevel >= common.TRACE_LEVEL_2) {
       console.debug(
         'Permission "' +
@@ -517,6 +592,7 @@ Permission.prototype.isDenied = function (role, resource, action) {
     return !perm[Types.ALL];
   } //else specific action is present
 
+  /* istanbul ignore next */
   if (this.traceLevel >= common.TRACE_LEVEL_2) {
     console.debug(
       'Returns `' +

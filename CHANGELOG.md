@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.3.0] - 2021-02-15
+
+### Added
+
+- `isAllowedStrict` and `isDeniedStrict` methods are added to differentiate inherited access and explicit access.
+- 2 more levels of trace are added.
+
+### Changed
+
+- 100% statement coverage.
+
+### Fixed
+
+- A few problems with null role/resource specified as arguments are fixed.
+
 ## [1.2.0-rc1] - 2020-10-10
 
 ### Added

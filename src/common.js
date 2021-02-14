@@ -36,4 +36,6 @@ module.exports = {
   TRACE_LEVEL_0: 0,
   TRACE_LEVEL_1: 1,
   TRACE_LEVEL_2: 2,
+  TRACE_LEVEL_3: 3,
+  TRACE_LEVEL_4: 4,
 };
